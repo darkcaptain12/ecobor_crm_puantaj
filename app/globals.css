@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --eco-green: #2E7D32;
+  --eco-green-lt: #4CAF50;
+  --eco-green-dk: #1B5E20;
+  --eco-bg: #F5F7F5;
+  --eco-text: #1A2E1A;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  color: var(--eco-text);
+  background: var(--eco-bg);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+@layer components {
+  .sidebar-link {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-gray-300 hover:bg-eco-admin-2 hover:text-white;
+  }
+  .sidebar-link.active {
+    @apply bg-eco-green text-white;
+  }
+  .stat-card {
+    @apply bg-white rounded-xl p-5 shadow-card border border-eco-border;
+  }
+  .eco-btn {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all;
+  }
+  .eco-btn-primary {
+    @apply eco-btn bg-eco-green text-white hover:bg-eco-green-dk;
+  }
+  .eco-btn-secondary {
+    @apply eco-btn bg-eco-green-bg text-eco-green hover:bg-eco-green hover:text-white;
+  }
+  .eco-btn-danger {
+    @apply eco-btn bg-red-50 text-eco-error hover:bg-eco-error hover:text-white;
+  }
+  .eco-input {
+    @apply w-full px-3 py-2.5 rounded-lg border border-eco-border bg-white text-eco-text placeholder-eco-gray focus:outline-none focus:ring-2 focus:ring-eco-green focus:border-transparent text-sm;
+  }
+  .eco-select {
+    @apply eco-input cursor-pointer;
+  }
+  .eco-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+}
