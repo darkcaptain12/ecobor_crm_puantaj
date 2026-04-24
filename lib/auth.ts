@@ -24,9 +24,8 @@ export const authOptions: NextAuthOptions = {
 
         const { data: user } = await db
           .from('users')
-          .select('id, name, phone, password, role, is_active')
+          .select('id, name, phone, password, role')
           .eq('phone', credentials.phone)
-          .eq('is_active', true)
           .maybeSingle();
 
         if (!user) return null;
