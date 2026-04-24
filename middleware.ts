@@ -18,6 +18,10 @@ export default withAuth(
         if (path.startsWith('/api/')) {
           return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 });
         }
+        // Müşteri paneline yetkisiz erişim → müşteri giriş sayfasına yönlendir
+        if (prefix === '/musteri') {
+          return NextResponse.redirect(new URL('/puan', req.url));
+        }
         return NextResponse.redirect(new URL(`/giris?redirect=${encodeURIComponent(path)}`, req.url));
       }
     }

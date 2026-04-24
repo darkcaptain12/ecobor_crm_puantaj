@@ -1,6 +1,6 @@
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { compare } from 'bcryptjs';
-import { supabaseServer } from './supabase-server';
+import { createClient } from '@supabase/supabase-js';
 import type { NextAuthOptions } from 'next-auth';
 
 export const authOptions: NextAuthOptions = {
@@ -16,11 +16,19 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.phone || !credentials?.password) return null;
-        const { data: user } = await supabaseServer
+
+        const db = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        );
+
+        const { data: user } = await db
           .from('users')
-          .select('id, name, phone, password, role')
+          .select('id, name, phone, password, role, is_active')
           .eq('phone', credentials.phone)
+          .eq('is_active', true)
           .maybeSingle();
+
         if (!user) return null;
         const valid = await compare(credentials.password, user.password);
         if (!valid) return null;
