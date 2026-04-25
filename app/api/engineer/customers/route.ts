@@ -31,10 +31,20 @@ export async function POST(req: NextRequest) {
   const { data, error } = await supabaseServer.from('customers').insert({
     ...body,
     assigned_to: token.id,
+    total_points: 500,
     location_lat: body.location_lat ? parseFloat(body.location_lat) : null,
     location_lng: body.location_lng ? parseFloat(body.location_lng) : null,
   }).select().single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Hoşgeldin puan kaydı
+  await supabaseServer.from('reward_logs').insert({
+    customer_id: data.id,
+    type: 'earn',
+    points: 500,
+    description: 'Hoşgeldin bonusu — üyelik puanı',
+  });
+
   return NextResponse.json(data, { status: 201 });
 }

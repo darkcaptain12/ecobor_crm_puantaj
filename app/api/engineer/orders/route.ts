@@ -9,15 +9,19 @@ export async function GET(req: NextRequest) {
   if (!token) return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 });
 
   const statusParam = req.nextUrl.searchParams.get('status');
+  const customerIdParam = req.nextUrl.searchParams.get('customer_id');
   let query = supabaseServer
     .from('orders')
-    .select('id, order_number, status, total_amount, created_at, customer:customers(name, phone)')
+    .select('id, order_number, status, total_amount, created_at, tracking_code, shipment_company, customer:customers(name, phone)')
     .eq('engineer_id', (token as any).id)
     .order('created_at', { ascending: false });
 
   if (statusParam) {
     const statuses = statusParam.split(',');
     query = query.in('status', statuses);
+  }
+  if (customerIdParam) {
+    query = query.eq('customer_id', customerIdParam);
   }
 
   const { data, error } = await query;

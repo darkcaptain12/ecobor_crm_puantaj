@@ -9,12 +9,14 @@ export async function GET(req: NextRequest) {
   if (!token) return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 });
 
   const orderId = req.nextUrl.searchParams.get('order_id');
+  const orderIds = req.nextUrl.searchParams.get('order_ids');
   let query = supabaseServer
     .from('shipments')
     .select('*, order:orders(id, customer_id, customer:customers(name, phone))')
     .order('created_at', { ascending: false });
 
   if (orderId) query = query.eq('order_id', orderId);
+  else if (orderIds) query = query.in('order_id', orderIds.split(','));
 
   const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

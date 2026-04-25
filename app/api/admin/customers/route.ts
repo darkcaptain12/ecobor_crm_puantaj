@@ -38,10 +38,20 @@ export async function POST(req: NextRequest) {
     name, phone, region: region || null, crop_type: crop_type || null,
     planting_date: planting_date || null, status: status || 'new',
     notes: notes || null, assigned_to: token.id,
+    total_points: 500,
     location_lat: location_lat ? parseFloat(location_lat) : null,
     location_lng: location_lng ? parseFloat(location_lng) : null,
   }).select().single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Hoşgeldin puan kaydı
+  await supabaseServer.from('reward_logs').insert({
+    customer_id: data.id,
+    type: 'earn',
+    points: 500,
+    description: 'Hoşgeldin bonusu — üyelik puanı',
+  });
+
   return NextResponse.json(data, { status: 201 });
 }

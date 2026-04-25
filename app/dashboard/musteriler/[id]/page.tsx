@@ -6,7 +6,14 @@ import Link from 'next/link';
 import { formatDate, formatDateTime } from '@/lib/utils';
 import Badge, { statusBadge } from '@/components/ui/Badge';
 import Modal from '@/components/ui/Modal';
-import { ArrowLeft, Plus, Phone, MapPin, Wheat, Award } from 'lucide-react';
+import { ArrowLeft, Plus, Phone, MapPin, Wheat, Award, Truck, Package, CheckCircle2 } from 'lucide-react';
+
+const SHIPMENT_STATUS: Record<string, { label: string; color: string; step: number }> = {
+  preparing: { label: 'Hazırlanıyor', color: 'text-yellow-600', step: 1 },
+  shipped: { label: 'Kargoya Verildi', color: 'text-blue-600', step: 2 },
+  in_transit: { label: 'Yolda', color: 'text-purple-600', step: 3 },
+  delivered: { label: 'Teslim Edildi', color: 'text-eco-green', step: 4 },
+};
 
 export default function EngineerMusteriDetay() {
   const { id } = useParams();
@@ -14,6 +21,8 @@ export default function EngineerMusteriDetay() {
   const [interactions, setInteractions] = useState<any[]>([]);
   const [prescriptions, setPrescriptions] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [shipments, setShipments] = useState<Record<string, any>>({});
   const [showInterModal, setShowInterModal] = useState(false);
   const [showPrescModal, setShowPrescModal] = useState(false);
   const [interForm, setInterForm] = useState({ type: 'call', note: '', next_followup: '' });
@@ -25,11 +34,22 @@ export default function EngineerMusteriDetay() {
       fetch(`/api/engineer/interactions/${id}`).then((r) => r.json()),
       fetch(`/api/engineer/prescriptions/${id}`).then((r) => r.json()),
       fetch('/api/admin/products').then((r) => r.json()),
-    ]).then(([c, i, p, prods]) => {
+      fetch(`/api/engineer/orders?customer_id=${id}`).then((r) => r.json()),
+    ]).then(async ([c, i, p, prods, ords]) => {
       setCustomer(c);
       setInteractions(Array.isArray(i) ? i : []);
       setPrescriptions(Array.isArray(p) ? p : []);
       setProducts(Array.isArray(prods) ? prods : []);
+      const orderList = Array.isArray(ords) ? ords : [];
+      setOrders(orderList);
+      if (orderList.length > 0) {
+        const ids = orderList.map((o: any) => o.id).join(',');
+        const sRes = await fetch(`/api/shipments?order_ids=${ids}`);
+        const sData = await sRes.json();
+        const map: Record<string, any> = {};
+        (Array.isArray(sData) ? sData : []).forEach((s: any) => { map[s.order_id] = s; });
+        setShipments(map);
+      }
     });
   }, [id]);
 
@@ -147,6 +167,62 @@ export default function EngineerMusteriDetay() {
           {!prescriptions.length && <p className="text-sm text-eco-gray">Reçete yok</p>}
         </div>
       </div>
+
+      {/* Kargo / Siparişler */}
+      {orders.length > 0 && (
+        <div className="bg-white rounded-xl shadow-card border border-eco-border p-5">
+          <h2 className="font-semibold text-eco-text mb-4 flex items-center gap-2">
+            <Truck className="w-4 h-4 text-eco-green" /> Kargo & Sipariş Geçmişi
+          </h2>
+          <div className="space-y-3">
+            {orders.map((order: any) => {
+              const shipment = shipments[order.id];
+              const cfg = shipment ? SHIPMENT_STATUS[shipment.status] ?? SHIPMENT_STATUS.preparing : null;
+              const { label: orderLabel } = statusBadge(order.status);
+              return (
+                <div key={order.id} className="border border-eco-border rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <p className="text-xs font-mono text-eco-gray">{order.order_number}</p>
+                      <p className="font-semibold text-eco-text text-sm">
+                        {Number(order.total_amount).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}
+                      </p>
+                    </div>
+                    {cfg ? (
+                      <span className={`text-xs font-semibold flex items-center gap-1 ${cfg.color}`}>
+                        <Truck className="w-3.5 h-3.5" />{cfg.label}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-eco-gray">{orderLabel}</span>
+                    )}
+                  </div>
+                  {shipment && (
+                    <>
+                      <div className="flex items-center gap-1 mb-2">
+                        {[1, 2, 3, 4].map((step) => (
+                          <div key={step} className={`h-1 flex-1 rounded-full ${step <= (cfg?.step ?? 0) ? 'bg-eco-green' : 'bg-eco-border'}`} />
+                        ))}
+                      </div>
+                      <p className="text-xs text-eco-gray">
+                        <Truck className="w-3 h-3 inline mr-1" />
+                        {shipment.carrier} · <span className="font-mono">{shipment.tracking_number}</span>
+                        {shipment.status === 'delivered' && <CheckCircle2 className="w-3 h-3 inline ml-2 text-eco-green" />}
+                      </p>
+                    </>
+                  )}
+                  {!shipment && order.tracking_code && (
+                    <p className="text-xs text-eco-gray mt-1">
+                      <Package className="w-3 h-3 inline mr-1" />
+                      {order.shipment_company} · {order.tracking_code}
+                    </p>
+                  )}
+                  <p className="text-xs text-eco-gray mt-1">{formatDate(order.created_at)}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Etkileşim Modal */}
       <Modal open={showInterModal} onClose={() => setShowInterModal(false)} title="Etkileşim Ekle">
