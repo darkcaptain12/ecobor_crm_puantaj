@@ -16,20 +16,25 @@ export default async function MusteriKargo() {
   const session = await getServerSession(authOptions);
   const userId = (session?.user as any)?.id;
 
-  // Müşterinin siparişlerini + kargolarını getir
   const { data: customer } = await supabaseServer
     .from('customers')
     .select('id')
-    .eq('id', userId)
+    .eq('user_id', userId)
     .maybeSingle();
 
-  // customers tablosunda eşleşme yoksa kullanıcı ID ile dene
-  const customerId = customer?.id ?? userId;
+  if (!customer) {
+    return (
+      <div className="p-4 text-center py-16 text-eco-gray">
+        <Truck className="w-12 h-12 mx-auto mb-3 opacity-30" />
+        <p>Müşteri kaydı bulunamadı</p>
+      </div>
+    );
+  }
 
   const { data: orders } = await supabaseServer
     .from('orders')
     .select('id, status, total_amount, created_at, shipment_company, tracking_code')
-    .eq('customer_id', customerId)
+    .eq('customer_id', customer.id)
     .order('created_at', { ascending: false });
 
   const orderIds = (orders ?? []).map((o: any) => o.id);
@@ -81,7 +86,6 @@ export default async function MusteriKargo() {
 
                 {shipment && (
                   <>
-                    {/* İlerleme */}
                     <div className="flex items-center gap-1 mb-3">
                       {[1, 2, 3, 4].map((step) => (
                         <div

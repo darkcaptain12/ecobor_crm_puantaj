@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
-import { Leaf, LayoutDashboard, Users, Calendar, ShoppingBag, Package, CheckSquare, LogOut, Menu, X, Truck } from 'lucide-react';
+import { Leaf, LayoutDashboard, Users, Calendar, ShoppingBag, Package, CheckSquare, LogOut, Menu, X, Truck, Gift } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -13,6 +13,7 @@ const navItems = [
   { href: '/dashboard/takvim', label: 'Takvim & Takip', icon: Calendar },
   { href: '/dashboard/satis', label: 'Saha Satışı', icon: ShoppingBag },
   { href: '/dashboard/kargo', label: 'Kargo Takibi', icon: Truck },
+  { href: '/dashboard/oduller', label: 'Hediye Yönetimi', icon: Gift },
   { href: '/dashboard/envanter', label: 'Araç Stoğum', icon: Package },
   { href: '/dashboard/gorevler', label: 'Görevlerim', icon: CheckSquare },
 ];
