@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, History, Gift, User } from 'lucide-react';
+import { Home, History, Gift, User, Truck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/musteri', label: 'Puanlarım', icon: Home, exact: true },
   { href: '/musteri/gecmis', label: 'Geçmiş', icon: History },
+  { href: '/musteri/kargo', label: 'Kargo', icon: Truck },
   { href: '/musteri/oduller', label: 'Ödüller', icon: Gift },
   { href: '/musteri/profil', label: 'Profilim', icon: User },
 ];

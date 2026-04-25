@@ -121,10 +121,6 @@ function LoginForm() {
         </div>
 
         <p className="text-center text-xs text-eco-gray mt-5">
-          Müşteri misiniz?{' '}
-          <a href="/puan" className="text-eco-green hover:underline">Puan paneline giriş →</a>
-        </p>
-        <p className="text-center text-xs text-eco-gray mt-2">
           © 2026 Ecobor Tarım — Tüm hakları saklıdır
         </p>
       </div>

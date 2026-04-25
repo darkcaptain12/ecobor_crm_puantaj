@@ -13,8 +13,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <AdminSidebar />
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <header className="h-14 bg-white border-b border-eco-border flex items-center justify-between px-6 sticky top-0 z-30">
-          <div />
+        <header className="h-14 bg-white border-b border-eco-border flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30">
+          <div className="w-10 lg:hidden" />
           <div className="flex items-center gap-3">
             <NotificationBell />
             <div className="flex items-center gap-2">
@@ -25,7 +25,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             </div>
           </div>
         </header>
-        <main className="flex-1 p-6 bg-eco-bg">
+        <main className="flex-1 p-4 lg:p-6 bg-eco-bg">
           {children}
         </main>
       </div>

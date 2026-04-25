@@ -4,7 +4,8 @@ import { createClient } from '@supabase/supabase-js';
 import type { NextAuthOptions } from 'next-auth';
 
 export const authOptions: NextAuthOptions = {
-  session: { strategy: 'jwt' },
+  session: { strategy: 'jwt', maxAge: 30 * 24 * 60 * 60, updateAge: 24 * 60 * 60 },
+  jwt: { maxAge: 30 * 24 * 60 * 60 },
   secret: process.env.NEXTAUTH_SECRET,
   pages: { signIn: '/giris' },
   providers: [
@@ -24,14 +25,26 @@ export const authOptions: NextAuthOptions = {
 
         const { data: user } = await db
           .from('users')
-          .select('id, name, phone, password, role')
+          .select('id, name, phone, password, role, is_remote_enabled, remote_expire_at')
           .eq('phone', credentials.phone)
           .maybeSingle();
 
         if (!user) return null;
         const valid = await compare(credentials.password, user.password);
         if (!valid) return null;
-        return { id: user.id, name: user.name, email: user.phone, role: user.role };
+
+        // remote_expire_at kontrolü
+        const isRemoteEnabled = user.is_remote_enabled && (
+          !user.remote_expire_at || new Date(user.remote_expire_at) > new Date()
+        );
+
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.phone,
+          role: user.role,
+          is_remote_enabled: isRemoteEnabled,
+        };
       },
     }),
   ],
@@ -40,6 +53,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         (token as any).role = (user as any).role;
+        (token as any).is_remote_enabled = (user as any).is_remote_enabled ?? false;
       }
       return token;
     },
@@ -47,6 +61,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         (session.user as any).id = token.id;
         (session.user as any).role = (token as any).role;
+        (session.user as any).is_remote_enabled = (token as any).is_remote_enabled ?? false;
       }
       return session;
     },

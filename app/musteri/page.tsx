@@ -2,7 +2,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { supabaseServer } from '@/lib/supabase-server';
 import ProgressBar from '@/components/ui/ProgressBar';
-import { Award } from 'lucide-react';
+import { Award, MessageCircle } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,9 +12,18 @@ export default async function MusteriAnaSayfa() {
 
   const { data: customer } = await supabaseServer
     .from('customers')
-    .select('name, total_points')
+    .select('name, total_points, assigned_to')
     .eq('user_id', userId)
     .maybeSingle();
+
+  // Bağlı mühendis bilgisi (WhatsApp için telefon numarası)
+  const { data: engineer } = customer?.assigned_to
+    ? await supabaseServer
+        .from('users')
+        .select('name, phone')
+        .eq('id', customer.assigned_to)
+        .maybeSingle()
+    : { data: null };
 
   const { data: rules } = await supabaseServer
     .from('reward_rules')
@@ -48,6 +57,21 @@ export default async function MusteriAnaSayfa() {
             <Award className="w-5 h-5 text-yellow-300" />
             <span className="text-sm font-medium">{eligibleRules.length} ödül hakkınız var!</span>
           </div>
+        )}
+
+        {/* WhatsApp — Hediye Talep Et */}
+        {engineer?.phone && (
+          <a
+            href={`https://wa.me/9${engineer.phone.replace(/^0/, '')}?text=${encodeURIComponent(
+              `Merhaba ${engineer.name}, toplam ${totalPoints} puanıma karşılık hediyemi talep etmek istiyorum. Bilgi verir misiniz?`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1ebe5c] text-white font-semibold py-3 px-4 rounded-xl transition-colors w-full"
+          >
+            <MessageCircle className="w-5 h-5" />
+            Hediye Talep Et (WhatsApp)
+          </a>
         )}
       </div>
 

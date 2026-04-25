@@ -4,6 +4,27 @@ import { requireRole } from '@/lib/auth-helpers';
 import { supabaseServer } from '@/lib/supabase-server';
 import { generateOrderNumber } from '@/lib/utils';
 
+export async function GET(req: NextRequest) {
+  const token = await requireRole(req, ['ENGINEER', 'ADMIN']);
+  if (!token) return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 });
+
+  const statusParam = req.nextUrl.searchParams.get('status');
+  let query = supabaseServer
+    .from('orders')
+    .select('id, order_number, status, total_amount, created_at, customer:customers(name, phone)')
+    .eq('engineer_id', (token as any).id)
+    .order('created_at', { ascending: false });
+
+  if (statusParam) {
+    const statuses = statusParam.split(',');
+    query = query.in('status', statuses);
+  }
+
+  const { data, error } = await query;
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json(data);
+}
+
 export async function POST(req: NextRequest) {
   const token = await requireRole(req, ['ENGINEER', 'ADMIN']);
   if (!token) return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 });

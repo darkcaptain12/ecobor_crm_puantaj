@@ -19,7 +19,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-  const token = await requireRole(req, ['ADMIN', 'ENGINEER']);
+  const token = await requireRole(req, ['ADMIN', 'ENGINEER', 'MANAGER']);
   if (!token) return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 });
 
   const body = await req.json();
@@ -31,5 +31,19 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Sipariş teslim edilince → bu siparişe bağlı bekleyen komisyonları otomatik onayla
+  if (body.status === 'DELIVERED') {
+    await supabaseServer
+      .from('commissions')
+      .update({
+        status: 'approved',
+        approved_by: token.id,
+        approved_at: new Date().toISOString(),
+      })
+      .eq('order_id', params.id)
+      .eq('status', 'pending');
+  }
+
   return NextResponse.json(data);
 }
