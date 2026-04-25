@@ -50,7 +50,7 @@ export default function UzakErisimPage() {
         <div>
           <h1 className="text-xl font-bold text-eco-text">Uzak Erişim Yönetimi</h1>
           <p className="text-sm text-eco-gray mt-0.5">
-            Dış IP'den sisteme erişebilecek kullanıcıları yönetin
+            Dış IP&apos;den sisteme erişebilecek kullanıcıları yönetin
           </p>
         </div>
         <button onClick={load} className="eco-btn-secondary text-sm flex items-center gap-1.5">
