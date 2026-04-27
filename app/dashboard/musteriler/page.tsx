@@ -4,7 +4,7 @@ import { supabaseServer } from '@/lib/supabase-server';
 import Link from 'next/link';
 import Badge, { statusBadge } from '@/components/ui/Badge';
 import { formatDate } from '@/lib/utils';
-import { Plus, MapPin, Wheat, Phone, Award, Eye, Lock, Upload } from 'lucide-react';
+import { Plus, MapPin, Wheat, Phone, Award, Eye, Lock, Upload, Download } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,6 +47,17 @@ export default async function EngineerMusteriler({
     ? (customers ?? []).filter((c: any) => c.assigned_to === engineerId).length
     : customers?.length ?? 0;
 
+  // Export URL with current filters
+  function buildExportUrl() {
+    const params = new URLSearchParams();
+    if (searchParams.q) params.set('q', searchParams.q);
+    if (searchParams.region) params.set('region', searchParams.region);
+    if (searchParams.crop_type) params.set('crop', searchParams.crop_type);
+    if (activeStatus) params.set('status', activeStatus);
+    const str = params.toString();
+    return `/api/engineer/customers/export${str ? `?${str}` : ''}`;
+  }
+
   // Base URL for tab/filter links
   function buildUrl(overrides: Record<string, string>) {
     const params = new URLSearchParams();
@@ -79,6 +90,9 @@ export default async function EngineerMusteriler({
             <Eye className="w-4 h-4" />
             {viewMode === 'mine' ? 'Ortak Havuz' : 'Müşterilerim'}
           </Link>
+          <a href={buildExportUrl()} className="eco-btn-secondary text-sm px-3 py-2 flex items-center gap-1 bg-green-50 border-green-300 text-green-700 hover:bg-green-100">
+            <Download className="w-4 h-4" /> Excel İndir
+          </a>
           <Link href="/dashboard/import" className="eco-btn-secondary text-sm px-3 py-2 flex items-center gap-1">
             <Upload className="w-4 h-4" /> Veri Aktar
           </Link>

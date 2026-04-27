@@ -16,7 +16,7 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Şifre', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.phone || !credentials?.password) return null;
+        if (!credentials?.phone) return null;
 
         const db = createClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -30,8 +30,13 @@ export const authOptions: NextAuthOptions = {
           .maybeSingle();
 
         if (!user) return null;
-        const valid = await compare(credentials.password, user.password);
-        if (!valid) return null;
+
+        // CUSTOMER rolü → sadece telefon ile giriş (şifre gerekmez)
+        if (user.role !== 'CUSTOMER') {
+          if (!credentials?.password) return null;
+          const valid = await compare(credentials.password, user.password);
+          if (!valid) return null;
+        }
 
         // remote_expire_at kontrolü
         const isRemoteEnabled = user.is_remote_enabled && (

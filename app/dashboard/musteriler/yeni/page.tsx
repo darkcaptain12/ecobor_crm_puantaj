@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, AlertCircle, MapPin, Plus, X, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, AlertCircle, Plus, X, ShoppingBag } from 'lucide-react';
 
 const TURKISH_CITIES = [
   'Adana','Adıyaman','Afyonkarahisar','Ağrı','Amasya','Ankara','Antalya','Artvin',
@@ -38,8 +38,7 @@ export default function YeniMusteriler() {
 
   const [form, setForm] = useState({
     name: '', phone: '', region: '', planting_date: '',
-    notes: '', location_lat: '', location_lng: '',
-    status: 'yeni', source: '',
+    notes: '', status: 'yeni', source: '',
   });
 
   const [saleItems, setSaleItems] = useState([{ product_id: '', quantity: 1, unit_price: '' }]);
@@ -49,13 +48,6 @@ export default function YeniMusteriler() {
   }, [addSale]);
 
   const set = (f: string, v: string) => setForm((p) => ({ ...p, [f]: v }));
-
-  function getLocation() {
-    navigator.geolocation.getCurrentPosition((pos) => {
-      set('location_lat', String(pos.coords.latitude));
-      set('location_lng', String(pos.coords.longitude));
-    });
-  }
 
   function addCropTag(tag: string) {
     const trimmed = tag.trim();
@@ -219,20 +211,6 @@ export default function YeniMusteriler() {
               )}
             </div>
             <p className="text-xs text-eco-gray mt-1">Enter ile ekle · Birden fazla bitki ekleyebilirsiniz</p>
-          </div>
-
-          {/* GPS */}
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="block text-sm font-medium text-eco-text">GPS Konumu</label>
-              <button type="button" onClick={getLocation} className="text-xs text-eco-green flex items-center gap-1">
-                <MapPin className="w-3 h-3" />Konumumu Al
-              </button>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <input className="eco-input" placeholder="Enlem" value={form.location_lat} onChange={(e) => set('location_lat', e.target.value)} />
-              <input className="eco-input" placeholder="Boylam" value={form.location_lng} onChange={(e) => set('location_lng', e.target.value)} />
-            </div>
           </div>
 
           {/* Notlar */}

@@ -3,15 +3,13 @@
 import { useState } from 'react';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Star, Phone, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Star, Phone, AlertCircle } from 'lucide-react';
 import { Suspense, useEffect } from 'react';
 
 function PuanLoginForm() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -29,12 +27,12 @@ function PuanLoginForm() {
 
     const result = await signIn('credentials', {
       phone,
-      password,
+      password: '',
       redirect: false,
     });
 
     if (result?.error) {
-      setError('Telefon numarası veya şifre hatalı.');
+      setError('Telefon numarası bulunamadı. Lütfen mühendisinizle iletişime geçin.');
       setLoading(false);
       return;
     }
@@ -99,28 +97,7 @@ function PuanLoginForm() {
                   required
                 />
               </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-eco-text mb-1.5">Şifre</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-eco-gray" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="eco-input pl-9 pr-9 w-full"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-eco-gray hover:text-eco-text"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
+              <p className="text-xs text-eco-gray mt-1">Mühendisiniz tarafından sisteme kayıtlı numaranızı girin</p>
             </div>
 
             <button

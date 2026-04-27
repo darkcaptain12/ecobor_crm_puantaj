@@ -1,13 +1,26 @@
 import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
 
-// Şirket IP adresi — Vercel env'den okunur
+// Şirket IP adresi — Vercel env'den okunur (virgülle birden fazla IP eklenebilir)
 const COMPANY_IP = process.env.COMPANY_IP ?? '';
+const ALLOWED_IPS = COMPANY_IP ? COMPANY_IP.split(',').map(ip => ip.trim()).filter(Boolean) : [];
 
 function getClientIp(req: Request): string {
   const forwarded = req.headers.get('x-forwarded-for');
   if (forwarded) return forwarded.split(',')[0].trim();
   return req.headers.get('x-real-ip') ?? '127.0.0.1';
+}
+
+function addSecurityHeaders(res: NextResponse): NextResponse {
+  // Tarayıcıların CRM sayfasını önbelleğe almasını engelle
+  res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  // Clickjacking koruması
+  res.headers.set('X-Frame-Options', 'DENY');
+  // MIME sniffing koruması
+  res.headers.set('X-Content-Type-Options', 'nosniff');
+  // Referrer bilgisini gizle
+  res.headers.set('Referrer-Policy', 'no-referrer');
+  return res;
 }
 
 export default withAuth(
@@ -21,11 +34,11 @@ export default withAuth(
     const isFarmerRoute = path.startsWith('/musteri') || path.startsWith('/puan') || path.startsWith('/api/customer');
     const isAuthRoute = path.startsWith('/api/auth') || path === '/giris' || path === '/erisim-engellendi';
 
-    if (COMPANY_IP && !isFarmerRoute && !isAuthRoute) {
+    if (ALLOWED_IPS.length > 0 && !isFarmerRoute && !isAuthRoute) {
       const clientIp = getClientIp(req as any);
-      const isCompanyIp = clientIp === COMPANY_IP;
+      const isAllowedIp = ALLOWED_IPS.includes(clientIp);
 
-      if (!isCompanyIp && !isRemoteEnabled) {
+      if (!isAllowedIp && !isRemoteEnabled) {
         if (path.startsWith('/api/')) {
           return NextResponse.json(
             { error: 'Dış erişim engellendi. Yöneticinizle iletişime geçin.' },
@@ -33,6 +46,15 @@ export default withAuth(
           );
         }
         return NextResponse.redirect(new URL('/erisim-engellendi', req.url));
+      }
+    }
+
+    // ── Export endpoint'leri — ekstra kontrol ─────────────────────
+    // Export sadece oturumu olan kullanıcılara açık, token zorunlu
+    if (path.includes('/export')) {
+      const token = (req.nextauth.token as any);
+      if (!token?.id) {
+        return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 });
       }
     }
 
@@ -57,7 +79,8 @@ export default withAuth(
       }
     }
 
-    return NextResponse.next();
+    const response = NextResponse.next();
+    return addSecurityHeaders(response);
   },
   {
     callbacks: { authorized: ({ token }) => !!token },

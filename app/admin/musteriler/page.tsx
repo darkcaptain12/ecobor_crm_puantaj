@@ -1,7 +1,7 @@
 import { supabaseServer } from '@/lib/supabase-server';
 import Link from 'next/link';
 import Badge, { statusBadge } from '@/components/ui/Badge';
-import { Plus, MapPin, Wheat, Phone } from 'lucide-react';
+import { Plus, MapPin, Wheat, Phone, Download } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import ExportButton from '@/components/shared/ExportButton';
 
@@ -28,6 +28,15 @@ export default async function AdminMusteriler({
   const { data: cropTypes } = await supabaseServer.from('customers').select('crop_type').not('crop_type', 'is', null);
   const uniqueCrops = [...new Set(cropTypes?.map((r: any) => r.crop_type).filter(Boolean))];
 
+  function buildExportUrl() {
+    const params = new URLSearchParams();
+    if (searchParams.q) params.set('q', searchParams.q);
+    if (searchParams.region) params.set('region', searchParams.region);
+    if (searchParams.crop_type) params.set('crop_type', searchParams.crop_type);
+    const str = params.toString();
+    return `/api/admin/customers/export${str ? `?${str}` : ''}`;
+  }
+
   const exportData = (customers ?? []).map((c: any) => ({
     'Ad Soyad': c.name, 'Telefon': c.phone, 'Bölge': c.region ?? '',
     'Ekin Türü': c.crop_type ?? '', 'Ekim Tarihi': c.planting_date ?? '',
@@ -41,6 +50,9 @@ export default async function AdminMusteriler({
       <div className="flex items-center justify-between flex-wrap gap-2">
         <h1 className="text-xl font-bold text-eco-text">Müşteriler ({customers?.length ?? 0})</h1>
         <div className="flex items-center gap-2">
+          <a href={buildExportUrl()} className="eco-btn-secondary text-sm px-3 py-2 flex items-center gap-1 bg-green-50 border-green-300 text-green-700 hover:bg-green-100">
+            <Download className="w-4 h-4" /> Excel İndir
+          </a>
           <ExportButton data={exportData} filename="musteriler" />
           <Link href="/admin/musteriler/yeni" className="eco-btn-primary text-sm">
             <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Yeni Müşteri</span>
