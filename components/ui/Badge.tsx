@@ -25,6 +25,12 @@ export default function Badge({ variant = 'gray', className, children }: {
 
 export function statusBadge(status: string) {
   const map: Record<string, { label: string; variant: BadgeVariant }> = {
+    // Customer statuses (new system)
+    yeni: { label: 'Yeni', variant: 'blue' },
+    eski: { label: 'Eski', variant: 'gray' },
+    onemli: { label: 'Önemli', variant: 'green' },
+    potansiyel: { label: 'Potansiyel', variant: 'yellow' },
+    // Legacy
     new: { label: 'Yeni', variant: 'blue' },
     active: { label: 'Aktif', variant: 'green' },
     dealer: { label: 'Bayi', variant: 'purple' },

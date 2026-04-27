@@ -9,12 +9,22 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = req.nextUrl;
   const q = searchParams.get('q');
-  let query = supabaseServer.from('customers').select('*').eq('assigned_to', token.id).order('updated_at', { ascending: false });
+  const status = searchParams.get('status');
+  const customerId = searchParams.get('customer_id');
+
+  let query = supabaseServer
+    .from('customers')
+    .select('*')
+    .eq('assigned_to', token.id)
+    .order('updated_at', { ascending: false });
+
   if (q) query = query.or(`name.ilike.%${q}%,phone.ilike.%${q}%`);
+  if (status) query = query.eq('status', status);
+  if (customerId) query = query.eq('id', customerId);
 
   const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data);
+  return NextResponse.json(customerId ? (data?.[0] ?? null) : data);
 }
 
 export async function POST(req: NextRequest) {
@@ -29,7 +39,16 @@ export async function POST(req: NextRequest) {
   if (existing) return NextResponse.json({ error: 'Bu telefon zaten kayıtlı' }, { status: 409 });
 
   const { data, error } = await supabaseServer.from('customers').insert({
-    ...body,
+    name,
+    phone,
+    region: body.region || null,
+    crop_type: body.crop_type || null,
+    planting_date: body.planting_date || null,
+    notes: body.notes || null,
+    status: body.status || 'yeni',
+    source: body.source || null,
+    sales_status: body.sales_status || null,
+    previous_sales_amount: body.previous_sales_amount ? Number(body.previous_sales_amount) : null,
     assigned_to: token.id,
     total_points: 500,
     location_lat: body.location_lat ? parseFloat(body.location_lat) : null,

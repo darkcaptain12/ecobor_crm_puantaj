@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { formatDate, formatDateTime } from '@/lib/utils';
 import Badge, { statusBadge } from '@/components/ui/Badge';
 import Modal from '@/components/ui/Modal';
-import { ArrowLeft, Plus, Phone, MapPin, Wheat, Award, Truck, Package, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Plus, Phone, MapPin, Wheat, Award, Truck, Package, CheckCircle2, MessageCircle, Tag, TrendingUp } from 'lucide-react';
 
 const SHIPMENT_STATUS: Record<string, { label: string; color: string; step: number }> = {
   preparing: { label: 'Hazırlanıyor', color: 'text-yellow-600', step: 1 },
@@ -83,13 +83,23 @@ export default function EngineerMusteriDetay() {
   const { label, variant } = statusBadge(customer.status);
   const typeColors: any = { call: 'bg-eco-green', visit: 'bg-eco-info', note: 'bg-eco-warning' };
   const typeLabels: any = { call: 'Arama', visit: 'Ziyaret', note: 'Not' };
+  const cropTags = customer.crop_type ? customer.crop_type.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
+
+  // WhatsApp link — telefon başındaki 0'ı kaldır, 90 ekle
+  const waPhone = customer.phone?.replace(/\s/g, '').replace(/^0/, '90');
+  const waLink = `https://wa.me/${waPhone}`;
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
         <Link href="/dashboard/musteriler" className="text-eco-gray hover:text-eco-text"><ArrowLeft className="w-5 h-5" /></Link>
         <h1 className="text-xl font-bold text-eco-text">{customer.name}</h1>
         <Badge variant={variant}>{label}</Badge>
+        {/* WhatsApp butonu */}
+        <a href={waLink} target="_blank" rel="noopener noreferrer"
+          className="ml-auto flex items-center gap-1.5 bg-[#25D366] hover:bg-[#1ebe5c] text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-colors">
+          <MessageCircle className="w-4 h-4" /> WhatsApp
+        </a>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -98,7 +108,33 @@ export default function EngineerMusteriDetay() {
           <h2 className="font-semibold text-eco-text mb-2">Bilgiler</h2>
           <p className="flex items-center gap-2 text-eco-text-2"><Phone className="w-4 h-4 text-eco-gray" />{customer.phone}</p>
           {customer.region && <p className="flex items-center gap-2 text-eco-text-2"><MapPin className="w-4 h-4 text-eco-gray" />{customer.region}</p>}
-          {customer.crop_type && <p className="flex items-center gap-2 text-eco-text-2"><Wheat className="w-4 h-4 text-eco-gray" />{customer.crop_type}</p>}
+          {cropTags.length > 0 && (
+            <div className="flex items-start gap-2">
+              <Wheat className="w-4 h-4 text-eco-gray shrink-0 mt-0.5" />
+              <div className="flex flex-wrap gap-1">
+                {cropTags.map((tag: string) => (
+                  <span key={tag} className="bg-eco-bg text-eco-text text-xs px-2 py-0.5 rounded-full">{tag}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          {customer.source && (
+            <p className="flex items-center gap-2 text-eco-text-2">
+              <Tag className="w-4 h-4 text-eco-gray" />{customer.source}
+            </p>
+          )}
+          {customer.sales_status && (
+            <p className="flex items-center gap-2 text-eco-text-2">
+              <TrendingUp className="w-4 h-4 text-eco-gray" />{customer.sales_status}
+            </p>
+          )}
+          {customer.previous_sales_amount > 0 && (
+            <p className="text-xs text-eco-gray">
+              Geçmiş satış: <span className="font-semibold text-eco-text">
+                {Number(customer.previous_sales_amount).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}
+              </span>
+            </p>
+          )}
         </div>
         <div className="bg-eco-green rounded-xl p-5 text-white">
           <p className="text-white/70 text-sm">Toplam Puan</p>
