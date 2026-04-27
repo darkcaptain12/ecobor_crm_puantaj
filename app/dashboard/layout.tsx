@@ -1,5 +1,6 @@
 import EngineerSidebar from '@/components/engineer/EngineerSidebar';
 import NotificationBell from '@/components/shared/NotificationBell';
+import WelcomeGuide from '@/components/shared/WelcomeGuide';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
@@ -26,6 +27,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           </div>
         </header>
         <main className="flex-1 p-4 lg:p-6 bg-eco-bg">{children}</main>
+        <WelcomeGuide role="ENGINEER" userName={session.user?.name ?? undefined} />
       </div>
     </div>
   );
