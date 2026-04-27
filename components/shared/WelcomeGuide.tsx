@@ -36,7 +36,7 @@ const ENGINEER_STEPS = [
           </div>
         </div>
         <div className="bg-red-50 border border-red-200 rounded-lg p-2">
-          <p className="text-red-700 text-[10px] font-semibold">⚠️ Ayşe Hanım'ın zeytini kritik dönemde — aranmalı</p>
+          <p className="text-red-700 text-[10px] font-semibold">⚠️ Ayşe Hanım&apos;ın zeytini kritik dönemde — aranmalı</p>
         </div>
       </div>
     ),
