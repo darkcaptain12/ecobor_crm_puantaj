@@ -454,7 +454,7 @@ BEGIN
     INSERT INTO shipments (order_id, tracking_number, carrier, status, notes)
     VALUES (
       o_prep,
-      NULL,
+      'YK2025-HAZIRLANIYOR',
       'Yurtiçi Kargo',
       'preparing',
       'Depodan hazırlanıyor. Kargo kodu kısa süre içinde atanacak.'
