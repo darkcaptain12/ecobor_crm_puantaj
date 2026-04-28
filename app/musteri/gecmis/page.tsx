@@ -13,7 +13,7 @@ export default async function PuanGecmisi() {
   const { data: customer } = await supabaseServer
     .from('customers')
     .select('id, total_points')
-    .eq('user_id', userId)
+    .or(`user_id.eq.${userId},id.eq.${userId}`)
     .maybeSingle();
 
   const { data: logs } = await supabaseServer

@@ -13,7 +13,7 @@ export default async function OdullerPage() {
   const { data: customer } = await supabaseServer
     .from('customers')
     .select('total_points')
-    .eq('user_id', userId)
+    .or(`user_id.eq.${userId},id.eq.${userId}`)
     .maybeSingle();
 
   const { data: rules } = await supabaseServer

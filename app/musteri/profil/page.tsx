@@ -15,7 +15,7 @@ export default async function ProfilPage() {
   const { data: customer } = await supabaseServer
     .from('customers')
     .select('name, phone, region, crop_type, planting_date, created_at')
-    .eq('user_id', userId)
+    .or(`user_id.eq.${userId},id.eq.${userId}`)
     .maybeSingle();
 
   const name = customer?.name ?? session?.user?.name;

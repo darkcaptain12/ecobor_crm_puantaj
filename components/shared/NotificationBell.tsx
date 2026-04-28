@@ -17,7 +17,7 @@ export default function NotificationBell() {
   }, []);
 
   async function markRead(id: string) {
-    await fetch(`/api/notifications/${id}`, { method: 'PUT' });
+    await fetch(`/api/notifications/${id}`, { method: 'PATCH' });
     setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, is_read: true } : n));
   }
 

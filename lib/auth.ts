@@ -29,7 +29,25 @@ export const authOptions: NextAuthOptions = {
           .eq('phone', credentials.phone)
           .maybeSingle();
 
-        if (!user) return null;
+        // Şifresiz giriş denemesi → customers tablosunu kontrol et
+        // (CRM'e kayıtlı çiftçiler users tablosunda olmayabilir)
+        if (!user) {
+          if (credentials.password) return null; // şifre verilmişse users'da aranır, bulunamadı
+          const { data: customer } = await db
+            .from('customers')
+            .select('id, name, phone')
+            .eq('phone', credentials.phone)
+            .maybeSingle();
+          if (!customer) return null;
+          // customers tablosundaki müşteri için sanal CUSTOMER oturumu
+          return {
+            id: customer.id,
+            name: customer.name,
+            email: customer.phone,
+            role: 'CUSTOMER',
+            is_remote_enabled: false,
+          };
+        }
 
         // CUSTOMER rolü → sadece telefon ile giriş (şifre gerekmez)
         if (user.role !== 'CUSTOMER') {

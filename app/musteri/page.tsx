@@ -10,10 +10,11 @@ export default async function MusteriAnaSayfa() {
   const session = await getServerSession(authOptions);
   const userId = (session?.user as any)?.id;
 
+  // user_id (users tablosundan giriş) veya id (customers tablosundan direkt giriş)
   const { data: customer } = await supabaseServer
     .from('customers')
-    .select('name, total_points, assigned_to')
-    .eq('user_id', userId)
+    .select('id, name, total_points, assigned_to')
+    .or(`user_id.eq.${userId},id.eq.${userId}`)
     .maybeSingle();
 
   // Bağlı mühendis bilgisi (WhatsApp için telefon numarası)
@@ -35,10 +36,11 @@ export default async function MusteriAnaSayfa() {
   const eligibleRules = rules?.filter((r: any) => totalPoints >= r.points_required) ?? [];
   const nextRule = rules?.find((r: any) => r.points_required > totalPoints);
 
+  const customerId = customer?.id ?? userId;
   const { data: recentLogs } = await supabaseServer
     .from('reward_logs')
     .select('*')
-    .eq('customer_id', userId)
+    .eq('customer_id', customerId)
     .order('created_at', { ascending: false })
     .limit(3);
 

@@ -19,7 +19,7 @@ export default async function MusteriKargo() {
   const { data: customer } = await supabaseServer
     .from('customers')
     .select('id')
-    .eq('user_id', userId)
+    .or(`user_id.eq.${userId},id.eq.${userId}`)
     .maybeSingle();
 
   if (!customer) {
